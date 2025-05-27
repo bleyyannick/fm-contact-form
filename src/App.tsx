@@ -1,33 +1,43 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <form id="contactForm">
+        <h1>Contact Us</h1>
+        <div className="form-description">
+          <div className="input-text">
+            <label htmlFor="firstName">First Name:</label>
+            <input type="text" id="firstName" name="firstName" required />
+          </div>
+          <div className="input-text">
+            <label htmlFor="lastName">Last Name:</label>
+            <input type="text" id="lastName" name="lastName" required />
+          </div>
+          <div className="input-text">
+            <label htmlFor="email">Email Address:</label>
+            <input type="text" id="email" name="email" required />
+          </div>
+        </div>
+      
+        <div className="form-options">
+          <legend>Query Type:</legend>
+          <div className="input-radio">
+            <input type="radio" id="queryType" name="queryType" value="General Enquiry" required />
+            <label htmlFor="queryType1">General Enquiry</label>
+          </div>
+          <div className="input-radio">
+            <input type="radio" id="queryType" name="queryType" value="Support Request" required />
+            <label htmlFor="queryType2">Support Request</label>
+          </div>
+        </div>
+
+        <label htmlFor="message">Message:</label>
+        <textarea id="message" name="message"  rows={4} required></textarea>
+
+        <button type="submit">Submit</button>
+      </form>
     </>
   )
 }
