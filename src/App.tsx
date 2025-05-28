@@ -32,11 +32,17 @@ function App() {
             <label htmlFor="queryType2">Support Request</label>
           </div>
         </div>
+        <div className='form-message'>
+          <label htmlFor="message">Message:</label>
+          <textarea id="message" name="message"  rows={4} required></textarea>
+        </div>
 
-        <label htmlFor="message">Message:</label>
-        <textarea id="message" name="message"  rows={4} required></textarea>
+        <div className="form-consent">
+          <input type="checkbox" id="consent" name="consent" />
+          <label htmlFor="consent">I consent to being contacted by the team.</label>
+        </div>
 
-        <button type="submit">Submit</button>
+        <button className='form-submit' type="submit">Submit</button>
       </form>
     </>
   )
