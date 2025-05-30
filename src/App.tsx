@@ -21,6 +21,10 @@ function App() {
     consent: false,
   });
 
+  const [error, setError] = useState<boolean>(false)
+
+
+
   const [didEdit, setDidEdit] = useState<Partial<Record<keyof FormDataType, boolean>>>({
     firstName: false,
     lastName: false,
@@ -29,6 +33,8 @@ function App() {
     message: false,
     consent: false,
   });
+
+  const errorStyle = didEdit.firstName && error ? 'error' :""; 
 
   const handleBlur = (identifier: keyof FormDataType) => {
     setDidEdit(prevEdit => ({
@@ -52,9 +58,11 @@ function App() {
         (field === 'email' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) ||
         (field === 'queryType' && value !== '')
       ) {
+        setError(false);
         setDidEdit(prev => ({ ...prev, [field]: false }));
       }
-    }
+    } 
+    setError(true);
 
     if (field === 'consent' && value === true) {
       setDidEdit(prev => ({ ...prev, [field]: false }));
@@ -89,20 +97,23 @@ function App() {
 
     console.log("Form Data Submitted:", formData);
   };
+  
 
   return (
     <form onSubmit={handleSubmit} id="contactForm">
       <h1>Contact Us</h1>
 
       <div className="form-description">
-        <div className="input-text">
+        <div className={`input-text ${errorStyle}`}>
           <label htmlFor="firstName">First Name:</label>
           <input 
             type="text" 
-            id="firstName" 
+            id="firstName"
+            className={errorStyle}
             name="firstName"
             onChange={e => handleInput('firstName', e.target.value)}
             onBlur={() => handleBlur("firstName")}
+            onFocus={() => setDidEdit(prev => ({ ...prev, firstName: false }))}
             value={formData.firstName}
           />
           <div className="error-message">
@@ -123,6 +134,7 @@ function App() {
             name="lastName"
             onChange={e => handleInput('lastName', e.target.value)}
             onBlur={() => handleBlur('lastName')}
+            onFocus={() => setDidEdit(prev => ({ ...prev, lastName: false }))}
             value={formData.lastName}
           />
           <div className="error-message">
@@ -143,6 +155,7 @@ function App() {
             name="email"
             onChange={e => handleInput('email', e.target.value)}
             onBlur={() => handleBlur('email')}
+            onFocus={() => setDidEdit(prev => ({ ...prev, email: false }))}
             value={formData.email}
           />
           <div className="error-message">
@@ -159,6 +172,7 @@ function App() {
         <div className="input-radio">
           <input 
             type="radio" 
+            className={errorStyle}
             id="queryType1" 
             name="queryType"
             value="General Enquiry"
@@ -172,11 +186,13 @@ function App() {
         <div className="input-radio">
           <input 
             type="radio" 
+            className={errorStyle}
             id="queryType2" 
             name="queryType"
             value="Support Request"
             onChange={e => handleInput("queryType", e.target.value)}
             onBlur={() => handleBlur("queryType")}
+            checked={formData.queryType === "Support Request"}
           />
           <label htmlFor="queryType2">Support Request</label>
         </div>
@@ -191,11 +207,13 @@ function App() {
       <div className="form-message">
         <label htmlFor="message">Message:</label>
         <textarea 
-          id="message" 
+          id="message"
+          className={didEdit.message && formData.message.trim().length < 10 ? 'error' : ''} 
           name="message"  
           rows={4}
           onChange={e => handleInput('message', e.target.value)}
-          onBlur={() => handleBlur('message')} 
+          onBlur={() => handleBlur('message')}
+          onFocus={() => setDidEdit(prev => ({ ...prev, message: false }))} 
           value={formData.message}
         ></textarea>
         <div className="error-message">
@@ -210,6 +228,7 @@ function App() {
           type="checkbox" 
           id="consent"
           name="consent"
+          className={didEdit.consent && !formData.consent ? 'error' : ''}
           onChange={e => handleInput("consent", e.target.checked)}
           onBlur={() => handleBlur("consent")}
           checked={formData.consent}
