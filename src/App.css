@@ -34,11 +34,12 @@
   box-sizing: border-box;
 }
 
-input[type="text"].error, .form-message textarea.error {
-  border: 1px solid var(--red);
+input[type="text"].error, 
+.form-message textarea.error, 
+.input-radio.error {
   color: var(--red);
+  border: 1px solid var(--red);
   border-color: var(--red);
-  background-color: var(--red-100);
 }
 
 input[type="text"]:focus, .form-message textarea:focus {
@@ -113,7 +114,6 @@ input[type="text"]:focus, .form-message textarea:focus {
 
 .form-consent {
   margin-bottom: 2rem;
-  display: flex;
   line-height: 1.5;
   color: var(--grey-900);
 }

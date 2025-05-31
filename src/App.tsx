@@ -1,115 +1,82 @@
 import { useState } from 'react'
 import './App.css'
+import { validateField } from './utils/validation'
+import { type FormDataType } from './types'
 
 function App() {
 
-  type FormDataType = { 
-    firstName: string;
-    lastName: string;
-    email: string;
-    queryType: string;
-    message: string;
-    consent: boolean;
+
+const initialFormState: FormDataType = {
+  firstName: '',
+  lastName: '',
+  email: '',
+  queryType: '',
+  message: '',
+  consent: false,
+};
+
+const initialDidEdit: Record<keyof FormDataType, boolean> = Object.keys(initialFormState).reduce(
+  (acc, key) => ({ ...acc, [key]: false }),
+  {} as Record<keyof FormDataType, boolean>
+);
+
+const [formData, setFormData] = useState<FormDataType>(initialFormState);
+const [didEdit, setDidEdit] = useState(initialDidEdit);
+
+
+const handleInput = (field: keyof FormDataType, value: string | boolean) => {
+  setFormData(prev => ({ ...prev, [field]: value }));
+
+  if (validateField(field, value)) {
+    setDidEdit(prev => ({ ...prev, [field]: false }));
   }
+};
 
-  const [formData, setFormData] = useState<FormDataType>({
-    firstName: '',
-    lastName: '',
-    email: '',
-    queryType: '',
-    message: '',
-    consent: false,
-  });
-
-  const [error, setError] = useState<boolean>(false)
+const handleBlur = (field: keyof FormDataType) => {
+  setDidEdit(prev => ({ ...prev, [field]: true }));
+};
 
 
+const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  event.preventDefault();
 
-  const [didEdit, setDidEdit] = useState<Partial<Record<keyof FormDataType, boolean>>>({
-    firstName: false,
-    lastName: false,
-    email: false,
-    queryType: false,
-    message: false,
-    consent: false,
-  });
+  const newDidEdit: Record<keyof FormDataType, boolean> = { ...initialDidEdit };
+  let isFormValid = true;
 
-  const errorStyle = didEdit.firstName && error ? 'error' :""; 
-
-  const handleBlur = (identifier: keyof FormDataType) => {
-    setDidEdit(prevEdit => ({
-      ...prevEdit,
-      [identifier]: true
-    }));
+  for (const field in formData) {
+    const key = field as keyof FormDataType;
+    const isValid = validateField(key, formData[key]);
+    newDidEdit[key] = !isValid;
+    if (!isValid) isFormValid = false;
   }
+  setDidEdit(newDidEdit);
 
-  const handleInput = (field: keyof FormDataType, value: string | boolean) => {
-    setFormData(prevData => ({
-      ...prevData,
-      [field]: value
-    }));
+  if (!isFormValid) return;
 
-    if (typeof value === 'string' && value.trim() !== '') {
-      const isOnlyLetters = /^[A-Za-zÀ-ÿ\s'-]+$/.test(value);
-      if (
-        (field === 'firstName' && value.length >= 3 && isOnlyLetters) ||
-        (field === 'lastName' && value.length >= 3 && isOnlyLetters) ||
-        (field === 'message' && value.length >= 10) ||
-        (field === 'email' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) ||
-        (field === 'queryType' && value !== '')
-      ) {
-        setError(false);
-        setDidEdit(prev => ({ ...prev, [field]: false }));
-      }
-    } 
-    setError(true);
+  setFormData(initialFormState);
+  setDidEdit(initialDidEdit);
+};
 
-    if (field === 'consent' && value === true) {
-      setDidEdit(prev => ({ ...prev, [field]: false }));
-    }
-  };
+const handleFocus = (field: keyof FormDataType) => {
+  setDidEdit(prev => ({ ...prev, [field]: false }));
+};
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+const getErrorStyle = (field: keyof FormDataType) => {
+  return didEdit[field] && !validateField(field, formData[field]) ? 'error' : '';
+};
 
-    const isOnlyLetters = /^[A-Za-zÀ-ÿ\s'-]+$/;
-
-    const isValid =
-      formData.firstName.trim().length >= 3 && isOnlyLetters.test(formData.firstName) &&
-      formData.lastName.trim().length >= 3 && isOnlyLetters.test(formData.lastName) &&
-      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email) &&
-      formData.queryType !== '' &&
-      formData.message.trim().length >= 10 &&
-      formData.consent === true;
-
-    if (!isValid) {
-      setDidEdit({
-        firstName: true,
-        lastName: true,
-        email: true,
-        queryType: true,
-        message: true,
-        consent: true
-      });
-      console.error("Form validation failed. Please check the errors.");
-      return;
-    }
-
-    console.log("Form Data Submitted:", formData);
-  };
-  
 
   return (
     <form onSubmit={handleSubmit} id="contactForm">
       <h1>Contact Us</h1>
 
       <div className="form-description">
-        <div className={`input-text ${errorStyle}`}>
+        <div className="input-text">
           <label htmlFor="firstName">First Name:</label>
           <input 
             type="text" 
             id="firstName"
-            className={errorStyle}
+            className={getErrorStyle('firstName')}
             name="firstName"
             onChange={e => handleInput('firstName', e.target.value)}
             onBlur={() => handleBlur("firstName")}
@@ -132,9 +99,10 @@ function App() {
             type="text" 
             id="lastName" 
             name="lastName"
+            className={getErrorStyle('lastName')}
             onChange={e => handleInput('lastName', e.target.value)}
             onBlur={() => handleBlur('lastName')}
-            onFocus={() => setDidEdit(prev => ({ ...prev, lastName: false }))}
+            onFocus={()=> handleFocus('lastName')}
             value={formData.lastName}
           />
           <div className="error-message">
@@ -153,9 +121,10 @@ function App() {
             type="text" 
             id="email" 
             name="email"
+            className={getErrorStyle('email')}
             onChange={e => handleInput('email', e.target.value)}
             onBlur={() => handleBlur('email')}
-            onFocus={() => setDidEdit(prev => ({ ...prev, email: false }))}
+            onFocus={() => handleFocus('email')}
             value={formData.email}
           />
           <div className="error-message">
@@ -169,10 +138,9 @@ function App() {
       <div className="form-options">
         <legend>Query Type:</legend>
 
-        <div className="input-radio">
+        <div className={`input-radio ${getErrorStyle('queryType')}`}>
           <input 
             type="radio" 
-            className={errorStyle}
             id="queryType1" 
             name="queryType"
             value="General Enquiry"
@@ -183,10 +151,10 @@ function App() {
           <label htmlFor="queryType1">General Enquiry</label>
         </div>
 
-        <div className="input-radio">
+        <div className={`input-radio ${getErrorStyle('queryType')}`}>
           <input 
             type="radio" 
-            className={errorStyle}
+            className={getErrorStyle('queryType')}
             id="queryType2" 
             name="queryType"
             value="Support Request"
@@ -208,12 +176,12 @@ function App() {
         <label htmlFor="message">Message:</label>
         <textarea 
           id="message"
-          className={didEdit.message && formData.message.trim().length < 10 ? 'error' : ''} 
+          className={getErrorStyle('message')} 
           name="message"  
           rows={4}
           onChange={e => handleInput('message', e.target.value)}
           onBlur={() => handleBlur('message')}
-          onFocus={() => setDidEdit(prev => ({ ...prev, message: false }))} 
+          onFocus={() => handleFocus('message')} 
           value={formData.message}
         ></textarea>
         <div className="error-message">
@@ -228,7 +196,7 @@ function App() {
           type="checkbox" 
           id="consent"
           name="consent"
-          className={didEdit.consent && !formData.consent ? 'error' : ''}
+          className={getErrorStyle('consent')}
           onChange={e => handleInput("consent", e.target.checked)}
           onBlur={() => handleBlur("consent")}
           checked={formData.consent}
